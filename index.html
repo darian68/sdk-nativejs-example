@@ -1,0 +1,183 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Lyrid SDK Sample</title>
+  <meta name="description" content="Lyrid SDK Sample">
+  <meta name="author" content="Darian">
+  <!-- CSS only -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+<body>
+  <div id="wrapper" class="container">
+    <div class="row"><h1>Lyrid SKD Sample</h1></div>
+    <div class="row">
+      <div class="col-3">
+        <div class="form-group">
+          <label for="frameworkRadio">List apps</label>
+          <select class="form-control" id="appSelect">
+          </select>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="form-group">
+          <label for="frameworkRadio">List modules</label>
+          <select class="form-control" id="moduleSelect">
+          </select>
+        </div></div>
+      <div class="col-3">
+        <div class="form-group">
+          <label for="frameworkRadio">List revisions</label>
+          <select class="form-control" id="revisionSelect">
+          </select>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="form-group">
+          <label for="frameworkRadio">List functions</label>
+          <select class="form-control" id="functionSelect">
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4">
+        <div class="form-group">
+          <label for="inputTextarea">Function Input</label>
+          <textarea class="form-control" id="inputTextarea" rows="3">{"InputSample":"Hello"}</textarea>
+        </div>
+      </div>
+      <div class="col-4">
+        <label for="frameworkRadio">Framework</label></br>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="frameworkRadio" id="lyrRadio" value="LYR" checked>
+          <label class="form-check-label" for="lyrRadio">LYR</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="frameworkRadio" id="awsRadio" value="AWS">
+          <label class="form-check-label" for="awsRadio">AWS</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="frameworkRadio" id="gcpRadio" value="GCP">
+          <label class="form-check-label" for="gcpRadio">GCP</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="frameworkRadio" id="anyRadio" value="ANY">
+          <label class="form-check-label" for="anyRadio">ANY</label>
+        </div>
+        <button type="button" class="btn btn-info float-right" id="executeButton">Execute</button>
+      </div>
+      <div class="col-4">
+        <div class="form-group">
+          <label for="outputTextarea">Function Response</label>
+          <textarea class="form-control" id="outputTextarea" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script src="https://cdn.jsdelivr.net/gh/darian68/lyrid-js-sdk@latest/lyrid.js?v=1.0.2" type="text/javascript"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  <script>
+    const lc = new Lyrid('RsliNzH8xQrdVIWJqOwd', 'bJq0YT7CRNKz4p0xh8rnQJB4VfYNwINEI3zlFJ67V25VGd8eXZ');
+    lc.getApps().then(data =>{
+      console.log(data);
+      const len = data.length;
+      if (len > 0) {
+        $('#appSelect').append($('<option>', {value: '',text: 'select app ...'}));
+        for (let i = 0; i < len; i++) {
+          $('#appSelect').append($('<option>', {value: data[i].id,text: data[i].name}));
+        }
+      }
+    }, () =>{
+      console.log("Can't get list apps");
+    });
+    
+    $(document).ready(function() {
+      $('#appSelect').change(function() {
+        const appId = $(this).val();
+        if (appId) {
+          $('#moduleSelect').html('');
+          $('#revisionSelect').html('');
+          $('#functionSelect').html('');
+          lc.getModules(appId).then(data =>{
+            console.log(data);
+            const len = data.length;
+            if (len > 0) {
+              $('#moduleSelect').append($('<option>', {value: '',text: 'select module ...'}));
+              for (let i = 0; i < len; i++) {
+                $('#moduleSelect').append($('<option>', {value: data[i].id,text: data[i].name}));
+              }
+            }
+          }, () =>{
+            console.log("Can't get list modules");
+          });
+        }
+      });
+      
+      $('#moduleSelect').change(function() {
+        const appId = $('#appSelect').val();
+        const moduleId = $(this).val();
+        if (moduleId) {
+          $('#revisionSelect').html('');
+          lc.getRevisions(appId, moduleId).then(data =>{
+            console.log(data);
+            const len = data.length;
+            if (len > 0) {
+              $('#revisionSelect').append($('<option>', {value: '',text: 'select revisions ...'}));
+              for (let i = 0; i < len; i++) {
+                $('#revisionSelect').append($('<option>', {value: data[i].id,text: data[i].creationTime + " Is Active: " + data[i].isActive}));
+              }
+            }
+          }, () =>{
+            console.log("Can't get list revisions");
+          });
+        }
+      });
+      
+      $('#revisionSelect').change(function() {
+        const appId = $('#appSelect').val();
+        const moduleId = $('#moduleSelect').val();
+        const revisionId = $(this).val();
+        if (revisionId) {
+          $('#functionSelect').html('');
+          lc.getFunctions(appId, moduleId, revisionId).then(data =>{
+            console.log(data);
+            const len = data.length;
+            if (len > 0) {
+              $('#functionSelect').append($('<option>', {value: '',text: 'select function ...'}));
+              for (let i = 0; i < len; i++) {
+                $('#functionSelect').append($('<option>', {value: data[i].id,text: data[i].name}));
+              }
+            }
+          }, () =>{
+            console.log("Can't get list functions");
+          });
+        }
+      });
+
+      $('#executeButton').click(function() {
+        const functionId = $('#functionSelect').val();
+        const framework = $('input[name="frameworkRadio"]').val();
+        const input = $('#inputTextarea').val();
+        if (functionId) {
+          lc.execute(functionId, framework, input).then(data => {
+            console.log(data);
+            $('#outputTextarea').val(JSON.stringify(data));
+          }, () =>{
+            console.log("Error on execute function");
+          });
+        }
+      });
+      
+
+    });
+  </script>
+</body>
+</html>
+
